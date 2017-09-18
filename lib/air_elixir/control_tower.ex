@@ -1,6 +1,8 @@
 defmodule AirElixir.ControlTower do
   use GenServer
 
+  alias AirElixir.Plane
+
   def start_link() do
     GenServer.start_link(__MODULE__, [], [])
   end
@@ -33,13 +35,7 @@ defmodule AirElixir.ControlTower do
     {:noreply, landing_strips}
   end
 
-  def handle_call(:open_landing_strip, _From, landingstrips) do
-    {id, newls} = create_landing_strip()
-    IO.puts("[TOWER] Opening new landing strip #{id}")
-    {:reply, newls, Map.put(landingstrips, id, newls)}
-  end
-
-  def handle_cast({:close_landing_strip, %{:id => id} = ls}, landing_strips) do
+  def handle_cast({:close_landing_strip, %{:id => id} = _ls}, landing_strips) do
     can_close_landing_strip(landing_strips[id])
   end
 
@@ -52,6 +48,11 @@ defmodule AirElixir.ControlTower do
     {:noreply, Map.put(landingstrips, ls_id, ls_freed)}
   end
 
+  def handle_call(:open_landing_strip, _From, landingstrips) do
+    {id, newls} = create_landing_strip()
+    IO.puts("[TOWER] Opening new landing strip #{id}")
+    {:reply, newls, Map.put(landingstrips, id, newls)}
+  end
 
   def handle_call({:land_plane, %{:flight_number => flight_number} = plane, %{:id => id} = ls}, from, landingstrips) do
     IO.puts("[TOWER] Plane #{flight_number} approaching runway #{id} ~n")
@@ -60,16 +61,16 @@ defmodule AirElixir.ControlTower do
   end
 
   def handle_call({:permission_to_land, plane}, _from, landingstrips) do
-    freelsmap = Map.filter(fn(_k, ls) -> ls["free"] == true end, landingstrips)
+    freelsmap = Map.values(landingstrips)
+               |> Enum.filter(fn(ls) -> ls[:free] == true end)
 
-    case Map.size(freelsmap) do
-      0 ->
+    case freelsmap do
+      [] ->
         IO.puts("[TOWER] Plane #{inspect plane} asked for landing - Landing strip occupied")
         {:reply, :cannot_land, landingstrips}
-      _ ->
-        [ls_chosen | _] = Map.values(freelsmap)
+      [ls_chosen | _] ->
         landingstripoccupied = %{ls_chosen | free: false}
-        newlandingstrips = Map.put(landingstrips, ls_chosen[:id], landingstripoccupied)
+        newlandingstrips = %{landingstrips | ls_chosen[:id] => landingstripoccupied}
         {:reply, landingstripoccupied, newlandingstrips}
     end
   end
@@ -78,7 +79,7 @@ defmodule AirElixir.ControlTower do
     {:stop, :normal, :ok, landingstrips}
   end
 
-  def terminate(normal, landingstrips) do
+  def terminate(:normal, landingstrips) do
     IO.puts("[TOWER] Landing Strips #{inspect landingstrips} were freed up")
     :ok
   end

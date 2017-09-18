@@ -6,7 +6,7 @@ defmodule AirElixir.ControlTower do
   end
 
   def open_landing_strip(pid) do
-    GenServer.call(pid, :open_landing_strip).
+    GenServer.call(pid, :open_landing_strip)
   end
 
   def close_landing_strip(pid, landing_strip) do
@@ -22,7 +22,7 @@ defmodule AirElixir.ControlTower do
   end
 
   def land_plane(pid, plane, landing_strip) do
-    GenServer.call(pid, {:land_plane, plane, landingstrip})
+    GenServer.call(pid, {:land_plane, plane, landing_strip})
   end
 
   ##### Gen server callbacks #####
@@ -69,13 +69,13 @@ defmodule AirElixir.ControlTower do
       _ ->
         [ls_chosen | _] = Map.values(freelsmap)
         landingstripoccupied = %{ls_chosen | free: false}
-        newlandingstrips = Map.put(landingstrips, ls_chosen[:id], landingstripoccupied),
+        newlandingstrips = Map.put(landingstrips, ls_chosen[:id], landingstripoccupied)
         {:reply, landingstripoccupied, newlandingstrips}
     end
   end
 
   def handle_call(:terminate, _from, landingstrips) do
-    {:stop, normal, :ok, landingstrips}
+    {:stop, :normal, :ok, landingstrips}
   end
 
   def terminate(normal, landingstrips) do
@@ -87,14 +87,13 @@ defmodule AirElixir.ControlTower do
     {:ok, state}
   end
 
-
   defp create_landing_strip() do
-    id = Random.uniform(1000000)
+    id = :random.uniform(1000000)
     {id, %{id: id, free: true} }
   end
 
   defp can_close_landing_strip(nil) do
-    IO.puts("[TOWER] Landing strip not found"),
+    IO.puts("[TOWER] Landing strip not found")
     {:noreply, %{}}
   end
 

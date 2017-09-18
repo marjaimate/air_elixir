@@ -1,0 +1,111 @@
+defmodule AirElixir.ControlTower do
+  use GenServer
+
+  def start_link() do
+    GenServer.start_link(__MODULE__, [], [])
+  end
+
+  def open_landing_strip(pid) do
+    GenServer.call(pid, :open_landing_strip).
+  end
+
+  def close_landing_strip(pid, landing_strip) do
+    GenServer.cast(pid, {:close_landing_strip, landing_strip})
+  end
+
+  def close_airport(pid) do
+    GenServer.call(pid, :terminate)
+  end
+
+  def permission_to_land(pid, plane) do
+    GenServer.call(pid, {:permission_to_land, plane})
+  end
+
+  def land_plane(pid, plane, landing_strip) do
+    GenServer.call(pid, {:land_plane, plane, landingstrip})
+  end
+
+  ##### Gen server callbacks #####
+  def init([]), do: {:ok, %{}}
+
+  def handle_info(msg, landing_strips) do
+    IO.puts "[TOWER] Unexpected message: #{inspect msg}"
+    {:noreply, landing_strips}
+  end
+
+  def handle_call(:open_landing_strip, _From, landingstrips) do
+    {id, newls} = create_landing_strip()
+    IO.puts("[TOWER] Opening new landing strip #{id}")
+    {:reply, newls, Map.put(landingstrips, id, newls)}
+  end
+
+  def handle_cast({:close_landing_strip, %{:id => id} = ls}, landing_strips) do
+    can_close_landing_strip(landing_strips[id])
+  end
+
+  def handle_cast({:make_landing, %{:flight_number => flight_number}, %{:id => ls_id} = ls, {plane, _} = _from}, landingstrips) do
+    IO.puts("[TOWER] Plane #{flight_number} landed, freeing up runway #{ls_id}")
+    ls_freed = %{ls | free: true}
+
+    Plane.rest(plane)
+
+    {:noreply, Map.put(landingstrips, ls_id, ls_freed)}
+  end
+
+
+  def handle_call({:land_plane, %{:flight_number => flight_number} = plane, %{:id => id} = ls}, from, landingstrips) do
+    IO.puts("[TOWER] Plane #{flight_number} approaching runway #{id} ~n")
+    GenServer.cast(self(), {:make_landing, plane, ls, from})
+    {:reply, :ok, landingstrips}
+  end
+
+  def handle_call({:permission_to_land, plane}, _from, landingstrips) do
+    freelsmap = Map.filter(fn(_k, ls) -> ls["free"] == true end, landingstrips)
+
+    case Map.size(freelsmap) do
+      0 ->
+        IO.puts("[TOWER] Plane #{inspect plane} asked for landing - Landing strip occupied")
+        {:reply, :cannot_land, landingstrips}
+      _ ->
+        [ls_chosen | _] = Map.values(freelsmap)
+        landingstripoccupied = %{ls_chosen | free: false}
+        newlandingstrips = Map.put(landingstrips, ls_chosen[:id], landingstripoccupied),
+        {:reply, landingstripoccupied, newlandingstrips}
+    end
+  end
+
+  def handle_call(:terminate, _from, landingstrips) do
+    {:stop, normal, :ok, landingstrips}
+  end
+
+  def terminate(normal, landingstrips) do
+    IO.puts("[TOWER] Landing Strips #{inspect landingstrips} were freed up")
+    :ok
+  end
+
+  def code_change(_oldvsn, state, _extra) do
+    {:ok, state}
+  end
+
+
+  defp create_landing_strip() do
+    id = Random.uniform(1000000)
+    {id, %{id: id, free: true} }
+  end
+
+  defp can_close_landing_strip(nil) do
+    IO.puts("[TOWER] Landing strip not found"),
+    {:noreply, %{}}
+  end
+
+  defp can_close_landing_strip(%{free: false} = landing_strip) do
+    IO.puts("[TOWER] Landing strip #{inspect landing_strip} occupied, reschedule close")
+    GenServer.cast(self(), {:close_landing_strip, landing_strip})
+    {:noreply, landing_strip}
+  end
+
+  defp can_close_landing_strip(%{free: true} = landing_strip) do
+    IO.puts("[TOWER] Closing landing strip #{landing_strip}")
+    {:noreply, %{}}
+  end
+end

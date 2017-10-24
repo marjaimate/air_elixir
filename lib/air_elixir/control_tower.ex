@@ -19,6 +19,10 @@ defmodule AirElixir.ControlTower do
     GenServer.call(pid, :open_landing_strip)
   end
 
+  def status(pid) do
+    GenServer.call(pid, :status)
+  end
+
   def close_landing_strip(pid, landing_strip) do
     GenServer.cast(pid, {:close_landing_strip, landing_strip})
   end
@@ -54,6 +58,10 @@ defmodule AirElixir.ControlTower do
     Plane.rest(plane)
 
     {:noreply, Map.put(landingstrips, ls_id, ls_freed)}
+  end
+
+  def handle_call(:status, _From, landingstrips) do
+    {:reply, landingstrips, landingstrips}
   end
 
   def handle_call(:open_landing_strip, _From, landingstrips) do

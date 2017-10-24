@@ -12,7 +12,7 @@ defmodule AirElixir.ControlTower do
   end
 
   def start_link(_, name) do
-    start_link(AirElixir.GenAirport)
+    start_link(name)
   end
 
   def open_landing_strip(pid) do

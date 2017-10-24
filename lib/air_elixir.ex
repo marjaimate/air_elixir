@@ -7,6 +7,9 @@ defmodule AirElixir do
     [:budapest, :dublin, :vilnius]
     |> List.foldl([], fn(name, acc) -> acc ++ [AirElixir.TowerSupervisor.start_control_tower(name)] end)
 
+    #   Start the dist supervisor on our CT node only
+    # Task.Supervisor.start_link name: DistSupervisor
+
     # Return the supervisor result
     return_sup
   end

@@ -19,6 +19,18 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/air_elixir](https://hexdocs.pm/air_elixir).
 
+## Starting a node
+
+You can use `iex` to start a new node with
+
+```bash
+$ iex --sname node1 --cookie MySecretC00kie --S mix
+```
+
+As long as you start them like this, with the same cookie and different names, you can start as many as you like and connect the nodes with:
+
+
+
 TODO
 =====
 

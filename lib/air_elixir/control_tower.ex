@@ -4,7 +4,15 @@ defmodule AirElixir.ControlTower do
   alias AirElixir.Plane
 
   def start_link() do
-    GenServer.start_link(__MODULE__, [], [])
+    start_link(AirElixir.GenAirport)
+  end
+
+  def start_link(name) do
+    GenServer.start_link(__MODULE__, [], name: name)
+  end
+
+  def start_link(_, name) do
+    start_link(AirElixir.GenAirport)
   end
 
   def open_landing_strip(pid) do

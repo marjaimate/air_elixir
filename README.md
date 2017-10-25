@@ -34,11 +34,7 @@ As long as you start them like this, with the same cookie and different names, y
 TODO
 =====
 
-* Add docs on how to start a node
-* Implement CT start on app start
-  - Add a control tower sup, with one_for_one
 * Add supervisor simple_one_for_one for planes (with a plane_sup)
-* Add tests to start many planes against a single gen_server
 * Prapare the same app for multinode setup
   - Multiple planes from all nodes trying to land
   - http://learnyousomeerlang.com/distributed-otp-applications

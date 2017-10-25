@@ -10,7 +10,8 @@ use Mix.Config
 
 # You can configure your application as:
 #
-#     config :air_elixir, key: :value
+config :air_elixir, airports: [:budapest, :dublin, :vilnius, :london, :rome, :berlin, :barcelona]
+
 #
 # and access this configuration in your application as:
 #

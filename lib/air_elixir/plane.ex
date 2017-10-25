@@ -29,11 +29,11 @@ defmodule AirElixir.Plane do
       case result do
           :cannot_land ->
               IO.puts("[PLANE] Can't land #{inspect plane}")
-              {:next_state, :in_air, plane, {:reply, from, plane}}
+              {:next_state, :in_air, plane, {:reply, from, :cannot_land}}
           landingstrip ->
               plane1 = %{plane | landing_strip: landingstrip}
               IO.puts("[PLANE] Got permission to land #{inspect plane1}")
-              {:next_state, :prepare_for_landing, plane1, {:reply, from, plane1}}
+              {:next_state, :prepare_for_landing, plane1, {:reply, from, :got_permission}}
       end
   end
   def in_air(event_type, event_content, data) do

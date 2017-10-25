@@ -52,6 +52,7 @@ defmodule AirElixir.ControlTower do
   end
 
   def handle_cast({:make_landing, %{:flight_number => flight_number}, %{:id => ls_id} = ls, {plane, _} = _from}, landingstrips) do
+    :timer.sleep(300)
     IO.puts("[TOWER][#{tower_name(self())}] Plane #{flight_number} landed, freeing up runway #{ls_id}")
     ls_freed = %{ls | free: true}
 

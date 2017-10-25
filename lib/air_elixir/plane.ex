@@ -15,7 +15,7 @@ defmodule AirElixir.Plane do
 
   def permission_to_land(plane), do: GenStateMachine.call(plane, :permission_to_land)
 
-  def land(plane), do: GenStateMachine.call(plane, :land)
+  def land(plane), do: GenStateMachine.cast(plane, :land)
 
   def rest(plane), do: GenStateMachine.cast(plane, :shutdown)
 
@@ -40,9 +40,9 @@ defmodule AirElixir.Plane do
     handle_event(event_type, event_content, :in_air, data)
   end
 
-  def prepare_for_landing({:call, from}, :land, %{control_tower_pid: ct, landing_strip: ls} = plane) do
+  def prepare_for_landing(:cast, :land, %{control_tower_pid: ct, landing_strip: ls} = plane) do
     ControlTower.land_plane(ct, plane, ls)
-    {:next_state, :landed, plane, {:reply, from, plane}}
+    {:next_state, :landed, plane}
   end
 
   def prepare_for_landing(event_type, event_content, data) do

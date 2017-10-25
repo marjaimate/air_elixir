@@ -10,7 +10,9 @@ use Mix.Config
 
 # You can configure your application as:
 #
-config :air_elixir, airports: [:budapest, :dublin, :vilnius, :london, :rome, :berlin, :barcelona]
+# configure your airports with tuples {:name, :number_of_landing_strips}
+#
+config :air_elixir, airports: [{:budapest, 2}, {:dublin, 4}, {:vilnius, 1}, {:london, 7}, {:rome, 3}, {:berlin, 4}, {:barcelona, 6}]
 
 #
 # and access this configuration in your application as:

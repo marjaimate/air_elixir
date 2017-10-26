@@ -35,12 +35,25 @@ $ iex --sname node1 --cookie MySecretC00kie --S mix
 
 As long as you start them like this, with the same cookie and different names, you can start as many as you like and connect the nodes with:
 
+## Distributed setup
 
+Compile and generate the release for the 3 configured nodes as
 
-TODO
-=====
+```bash
+$ MIX_ENV=air1 mix release --env=air1 --name=air1
+$ MIX_ENV=air2 mix release --env=air2 --name=air2
+$ MIX_ENV=air3 mix release --env=air3 --name=air3
+```
 
-* Add supervisor simple_one_for_one for planes (with a plane_sup)
-* Prapare the same app for multinode setup
-  - Multiple planes from all nodes trying to land
-  - http://learnyousomeerlang.com/distributed-otp-applications
+Then all you need to do is start up each nodes on its own terminal session:
+
+```bash
+# Terminal 1
+$ _build/air1/rel/air1/bin/air1 console
+
+# Terminal 2
+$ _build/air2/rel/air2/bin/air2 console
+
+# Terminal 3
+$ _build/air3/rel/air3/bin/air3 console
+```

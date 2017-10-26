@@ -1,7 +1,20 @@
 defmodule AirElixir do
   use Application
 
-  def start(_type, args) do
+  def start(:normal, args) do
+    start_control_tower(args)
+  end
+
+  def start({:takeover, other_node}, args) do
+    IO.puts "[SYS] Took over from #{inspect other_node}"
+    start_control_tower(args)
+  end
+
+  def stop(_) do
+    :ok
+  end
+
+  defp start_control_tower(args) do
     return_sup = AirElixir.TowerSupervisor.start_link(args)
     airports = Application.get_env(:air_elixir, :airports)
 
@@ -17,10 +30,6 @@ defmodule AirElixir do
 
     # Return the supervisor result
     return_sup
-  end
-
-  def stop(_) do
-    :ok
   end
 
   defp open_landing_strips(airport, n), do: open_landing_strips(airport, n, [])

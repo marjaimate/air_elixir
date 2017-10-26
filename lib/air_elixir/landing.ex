@@ -6,7 +6,7 @@ defmodule AirElixir.Landing do
     airports = Application.get_env(:air_elixir, :airports)
                |> Enum.map(fn {name, _} -> name end)
 
-    1..1000
+    1..20
     |> Enum.map(fn _ -> AirElixir.Plane.start_link(Enum.random(airports)) end)
     |> Enum.map(fn {:ok, pid} -> pid end)
     |> land_planes

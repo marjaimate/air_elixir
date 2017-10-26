@@ -12,8 +12,19 @@ use Mix.Config
 #
 # configure your airports with tuples {:name, :number_of_landing_strips}
 #
-config :air_elixir, airports: [{:budapest, 2}, {:dublin, 4}, {:vilnius, 1}, {:london, 7}, {:rome, 3}, {:berlin, 4}, {:barcelona, 6}]
-
+# {distributed, [
+#     {
+#      m8ball,
+#      5000,
+#      [a@ferdmbp, {b@ferdmbp, c@ferdmbp}]
+#     }
+#   ]
+# }
+#
+config :kernel,
+  distributed: [{:air_elixir, 5000, [:"air1@127.0.0.1", {:"air2@127.0.0.1", :"air3@127.0.0.1"}]}],
+  sync_nodes_mandatory: [:"air2@127.0.0.1", :"air3@127.0.0.1"],
+  sync_nodes_timeout: 10000
 #
 # and access this configuration in your application as:
 #
@@ -30,4 +41,4 @@ config :air_elixir, airports: [{:budapest, 2}, {:dublin, 4}, {:vilnius, 1}, {:lo
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-import_config "#{Mix.env}.exs"
+#     import_config "#{Mix.env}.exs"

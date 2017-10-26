@@ -54,13 +54,14 @@ defmodule AirElixir.Plane do
   end
 
   ## Handle_event callbacks
+  def handle_event({:call, from}, :get_state, state, _data) do
+    {:keep_state_and_data, [{:reply, from, state}]}
+  end
   def handle_event({:call, from}, event, _state, data) do
     IO.puts("Plane receives an unknown global event: #{event}")
     {:keep_state_and_data, [{:reply, from, data}]}
   end
-  def handle_event({:call, from}, :get_state, state, _data) do
-    {:keep_state_and_data, [{:reply, from, state}]}
-  end
+
   def handle_event(:cast, :shutdown, :landed, data) do
     {:stop, :normal, data}
   end

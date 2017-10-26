@@ -7,14 +7,14 @@ defmodule AirElixir.Landing do
                |> Enum.map(fn {name, _} -> name end)
 
     1..1000
-    |> Enum.map(fn i -> AirElixir.Plane.start_link(Enum.random(airports)) end)
+    |> Enum.map(fn _ -> AirElixir.Plane.start_link(Enum.random(airports)) end)
     |> Enum.map(fn {:ok, pid} -> pid end)
     |> land_planes
   end
 
   def test_single_plane() do
     {:ok, ct} = ControlTower.start_link()
-    ls1 = ControlTower.open_landing_strip(ct)
+    _ls1 = ControlTower.open_landing_strip(ct)
     plane = get_plane(ct)
 
     land_planes([plane])

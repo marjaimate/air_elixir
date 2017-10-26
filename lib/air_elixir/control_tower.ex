@@ -106,7 +106,7 @@ defmodule AirElixir.ControlTower do
   end
 
   defp create_landing_strip() do
-    id = :random.uniform(1000000)
+    id = :rand.uniform(1000000)
     {id, %{id: id, free: true} }
   end
 

@@ -36,6 +36,6 @@ $ iex --sname node1 --cookie MySecretC00kie -S mix
 As long as you start them like this, with the same cookie and different names, you can start as many as you like and connect the nodes with:
 
 ```elixir
-> Node.connect :'node1@127.0.0.1'
+> Node.connect :"node1@127.0.0.1"
 ```
 

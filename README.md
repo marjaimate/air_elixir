@@ -37,6 +37,12 @@ As long as you start them like this, with the same cookie and different names, y
 
 ## Distributed setup
 
+Prepare for building with distillery
+
+```bash
+$ mix release.init
+```
+
 Compile and generate the release for the 3 configured nodes as
 
 ```bash

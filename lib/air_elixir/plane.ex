@@ -25,14 +25,14 @@ defmodule AirElixir.Plane do
   def in_air({:call, from}, :permission_to_land, %{control_tower_pid: ct, flight_number: flight_number} = plane) do
       result = ControlTower.permission_to_land(ct, plane)
 
-      IO.puts("[PLANE] Plane #{flight_number} asks tower #{inspect ct} for permission to land. Got response #{inspect result}")
+      IO.puts("[PLANE][#{flight_number}] asks tower #{inspect ct} for permission to land. Got response #{inspect result}")
       case result do
           :cannot_land ->
-              IO.puts("[PLANE] Can't land #{inspect plane}")
+              IO.puts("[PLANE][#{flight_number}] Can't land, circling around the airport")
               {:next_state, :in_air, plane, {:reply, from, :cannot_land}}
           landingstrip ->
               plane1 = %{plane | landing_strip: landingstrip}
-              IO.puts("[PLANE] Got permission to land #{inspect plane1}")
+              IO.puts("[PLANE][#{flight_number}] Got permission to land")
               {:next_state, :prepare_for_landing, plane1, {:reply, from, :got_permission}}
       end
   end
@@ -66,8 +66,8 @@ defmodule AirElixir.Plane do
     {:stop, :normal, data}
   end
 
-  def terminate(:normal, :landed, plane) do
-    IO.puts("[PLANE] #{inspect plane} Finished up shift, chilling out in the hangar.")
+  def terminate(:normal, :landed, %{flight_number: flight_number} = plane) do
+    IO.puts("[PLANE][#{flight_number}] Finished up shift, chilling out in the hangar.")
     :ok
   end
   def terminate(_reason, _statename, _statedata), do: :ok

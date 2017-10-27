@@ -23,10 +23,6 @@ defmodule AirElixir.ControlTower do
     GenServer.call(pid, :status)
   end
 
-  def close_landing_strip(pid, landing_strip) do
-    GenServer.cast(pid, {:close_landing_strip, landing_strip})
-  end
-
   def close_airport(pid) do
     GenServer.call(pid, :terminate)
   end
@@ -45,10 +41,6 @@ defmodule AirElixir.ControlTower do
   def handle_info(msg, landing_strips) do
     IO.puts "[TOWER][#{tower_name(self())}] Unexpected message: #{inspect msg}"
     {:noreply, landing_strips}
-  end
-
-  def handle_cast({:close_landing_strip, %{:id => id} = _ls}, landing_strips) do
-    can_close_landing_strip(landing_strips[id])
   end
 
   def handle_cast({:make_landing, %{:flight_number => flight_number}, %{:id => ls_id} = ls, {plane, _} = _from}, landingstrips) do
@@ -101,29 +93,9 @@ defmodule AirElixir.ControlTower do
     :ok
   end
 
-  def code_change(_oldvsn, state, _extra) do
-    {:ok, state}
-  end
-
   defp create_landing_strip() do
     id = :rand.uniform(1000000)
     {id, %{id: id, free: true} }
-  end
-
-  defp can_close_landing_strip(nil) do
-    IO.puts("[TOWER][#{tower_name(self())}] Landing strip not found")
-    {:noreply, %{}}
-  end
-
-  defp can_close_landing_strip(%{free: false} = landing_strip) do
-    IO.puts("[TOWER][#{tower_name(self())}] Landing strip #{inspect landing_strip} occupied, reschedule close")
-    GenServer.cast(self(), {:close_landing_strip, landing_strip})
-    {:noreply, landing_strip}
-  end
-
-  defp can_close_landing_strip(%{free: true} = landing_strip) do
-    IO.puts("[TOWER][#{tower_name(self())}] Closing landing strip #{landing_strip}")
-    {:noreply, %{}}
   end
 
   defp tower_name(pid) do

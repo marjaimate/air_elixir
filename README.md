@@ -35,12 +35,7 @@ $ iex --sname node1 --cookie MySecretC00kie --S mix
 
 As long as you start them like this, with the same cookie and different names, you can start as many as you like and connect the nodes with:
 
+```elixir
+> Node.connet :'node1@127.0.0.1'
+```
 
-
-TODO
-=====
-
-* Add supervisor simple_one_for_one for planes (with a plane_sup)
-* Prapare the same app for multinode setup
-  - Multiple planes from all nodes trying to land
-  - http://learnyousomeerlang.com/distributed-otp-applications

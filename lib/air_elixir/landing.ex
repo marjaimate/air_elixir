@@ -13,8 +13,7 @@ defmodule AirElixir.Landing do
   end
 
   def test_single_plane() do
-    {:ok, ct} = ControlTower.start_link()
-    _ls1 = ControlTower.open_landing_strip(ct)
+    {:ok, ct} = ControlTower.start_link(:cork, 1)
     plane = get_plane(ct)
 
     land_planes([plane])

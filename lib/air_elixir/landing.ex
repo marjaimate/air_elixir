@@ -2,11 +2,11 @@ defmodule AirElixir.Landing do
   alias AirElixir.ControlTower
   alias AirElixir.Plane
 
-  def test_many_planes_to_airports() do
+  def test_many_planes_to_airports(planes) do
     airports = Application.get_env(:air_elixir, :airports)
                |> Enum.map(fn {name, _} -> name end)
 
-    1..1000
+    1..planes
     |> Enum.map(fn _ -> AirElixir.Plane.start_link(Enum.random(airports)) end)
     |> Enum.map(fn {:ok, pid} -> pid end)
     |> land_planes

@@ -87,6 +87,7 @@ defmodule AirElixir.Plane do
 
   defp create_plane(controltowerpid) do
       flightnumber = generate_flight_number()
-      %{flight_number: flightnumber, control_tower_pid: controltowerpid, landing_strip: nil, output: &IO.puts/1}
+      %{output: output} = AirElixir.ControlTower.status(controltowerpid) # Use the same output as the control tower
+      %{flight_number: flightnumber, control_tower_pid: controltowerpid, landing_strip: nil, output: output}
   end
 end

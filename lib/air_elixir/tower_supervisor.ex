@@ -5,8 +5,8 @@ defmodule AirElixir.TowerSupervisor do
     Supervisor.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def start_control_tower(name) do
-    Supervisor.start_child(__MODULE__, [name])
+  def start_control_tower(name, number_of_landing_strips) do
+    Supervisor.start_child(__MODULE__, [name, number_of_landing_strips])
   end
 
   def init(_opts) do

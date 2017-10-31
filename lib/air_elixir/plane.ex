@@ -21,18 +21,20 @@ defmodule AirElixir.Plane do
 
   def get_state(plane), do: GenStateMachine.call(plane, :get_state)
 
+  def set_output(plane, output_fn), do: GenStateMachine.call(plane, {:set_output, output_fn})
+
   ###### State Machine  => status x event ######
-  def in_air({:call, from}, :permission_to_land, %{control_tower_pid: ct, flight_number: flight_number} = plane) do
+  def in_air({:call, from}, :permission_to_land, %{control_tower_pid: ct, flight_number: flight_number, output: output} = plane) do
       result = ControlTower.permission_to_land(ct, plane)
 
-      IO.puts("[PLANE] Plane #{flight_number} asks tower #{inspect ct} for permission to land. Got response #{inspect result}")
+      output.("[PLANE][#{flight_number}] asks tower #{inspect ct} for permission to land. Got response #{inspect result}")
       case result do
           :cannot_land ->
-              IO.puts("[PLANE] Can't land #{inspect plane}")
+              output.("[PLANE][#{flight_number}] Can't land, circling around the airport")
               {:next_state, :in_air, plane, {:reply, from, :cannot_land}}
           landingstrip ->
               plane1 = %{plane | landing_strip: landingstrip}
-              IO.puts("[PLANE] Got permission to land #{inspect plane1}")
+              output.("[PLANE][#{flight_number}] Got permission to land")
               {:next_state, :prepare_for_landing, plane1, {:reply, from, :got_permission}}
       end
   end
@@ -54,11 +56,15 @@ defmodule AirElixir.Plane do
   end
 
   ## Handle_event callbacks
+  def handle_event({:call, from}, {:set_output, output}, state, data) do
+    new_data = Map.put data, :output, output
+    {:next_state, state, new_data, [{:reply, from, new_data}]}
+  end
   def handle_event({:call, from}, :get_state, state, _data) do
     {:keep_state_and_data, [{:reply, from, state}]}
   end
-  def handle_event({:call, from}, event, _state, data) do
-    IO.puts("Plane receives an unknown global event: #{event}")
+  def handle_event({:call, from}, event, _state, %{output: output} = data) do
+    output.("Plane receives an unknown global event: #{event}")
     {:keep_state_and_data, [{:reply, from, data}]}
   end
 
@@ -66,8 +72,8 @@ defmodule AirElixir.Plane do
     {:stop, :normal, data}
   end
 
-  def terminate(:normal, :landed, plane) do
-    IO.puts("[PLANE] #{inspect plane} Finished up shift, chilling out in the hangar.")
+  def terminate(:normal, :landed, %{flight_number: flight_number, output: output} = plane) do
+    output.("[PLANE][#{flight_number}] Finished up shift, chilling out in the hangar.")
     :ok
   end
   def terminate(_reason, _statename, _statedata), do: :ok
@@ -81,6 +87,6 @@ defmodule AirElixir.Plane do
 
   defp create_plane(controltowerpid) do
       flightnumber = generate_flight_number()
-      %{flight_number: flightnumber, control_tower_pid: controltowerpid, landing_strip: nil}
+      %{flight_number: flightnumber, control_tower_pid: controltowerpid, landing_strip: nil, output: &IO.puts/1}
   end
 end

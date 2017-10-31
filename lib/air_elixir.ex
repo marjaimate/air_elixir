@@ -4,13 +4,12 @@ defmodule AirElixir do
   def start(_type, args) do
     return_sup = AirElixir.TowerSupervisor.start_link(args)
     airports = Application.get_env(:air_elixir, :airports)
+    output_function = get_output_function(Application.get_env(:air_elixir, :output_function))
 
     # Add airports
     airports
-    |> List.foldl([], fn({name, _}, acc) -> acc ++ [AirElixir.TowerSupervisor.start_control_tower(name)] end)
-
-    airports
-    |> List.foldl([], fn({name, landing_strips}, acc) -> acc ++ open_landing_strips(name, landing_strips) end)
+    |> List.foldl([], fn({name, number_of_landing_strips}, acc) -> acc ++ [AirElixir.TowerSupervisor.start_control_tower(name, number_of_landing_strips)] end)
+    |> List.foldl([], fn({:ok, pid}, acc) -> [AirElixir.ControlTower.set_output(pid, output_function) | acc] end)
 
     #   Start the dist supervisor on our CT node only
     # Task.Supervisor.start_link name: DistSupervisor
@@ -23,10 +22,6 @@ defmodule AirElixir do
     :ok
   end
 
-  defp open_landing_strips(airport, n), do: open_landing_strips(airport, n, [])
-
-  defp open_landing_strips(_airport, 0, acc), do: acc
-  defp open_landing_strips(airport, n, acc) do
-    open_landing_strips(airport, n-1, acc ++ [AirElixir.ControlTower.open_landing_strip(airport)])
-  end
+  def get_output_function(nil), do: &IO.puts/1
+  def get_output_function(f), do: f
 end

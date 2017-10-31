@@ -30,12 +30,18 @@ $ mix compile
 You can use `iex` to start a new node with
 
 ```bash
-$ iex --sname node1 --cookie MySecretC00kie --S mix
+$ iex --name node1 --cookie MySecretC00kie -S mix
 ```
 
 As long as you start them like this, with the same cookie and different names, you can start as many as you like and connect the nodes with:
 
 ## Distributed setup
+
+Prepare for building with distillery
+
+```bash
+$ mix release.init
+```
 
 Compile and generate the release for the 3 configured nodes as
 

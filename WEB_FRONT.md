@@ -38,7 +38,16 @@ $ mix deps.get
 # config/config.exs
 
 
-config :air_elixir, airports: [{:budapest, 2}, {:dublin, 4}, {:vilnius, 1}, {:london, 7}, {:rome, 3}, {:berlin, 4}, {:barcelona, 6}]
+config :air_elixir,
+  airports: [
+    {:budapest, 2},
+    {:dublin, 4},
+    {:vilnius, 1},
+    {:london, 7},
+    {:rome, 3},
+    {:berlin, 4},
+    {:barcelona, 6}
+  ]
 ```
 
 # Run the server and see AirElixir starting up
@@ -62,7 +71,7 @@ defmodule AirTrafficWeb.AirportsController do
 
   def index(conn, _params) do
     conn
-    |> assign(:airports, get_airports)
+    |> assign(:airports, get_airports())
     |> render("index.html")
   end
 
@@ -167,8 +176,8 @@ end
 ```elixir
 # lib/air_traffic_web/controllers/airports_controller.ex
 
-  def send_planes(conn %{"number_of_planes" => number_of_planes} = params) do
-    airports = get_airports |> Enum.map(fn {n, _} -> n end)
+  def send_planes(conn, %{"number_of_planes" => number_of_planes} = _params) do
+    airports = get_airports() |> Enum.map(fn {n, _} -> n end)
 
     1..(String.to_integer(number_of_planes))
       |> Enum.map(fn _ -> Plane.start_link(Enum.random(airports)) end)
@@ -176,7 +185,7 @@ end
       |> land_planes
 
     conn
-    |> assign(:airports, get_airports)
+    |> assign(:airports, get_airports())
     |> render("index.html")
   end
 

@@ -19,6 +19,10 @@ defmodule AirElixir.ControlTower do
     GenServer.call(pid, :status)
   end
 
+  def set_output(pid, output_fn) do
+    GenServer.call(pid, {:set_output, output_fn})
+  end
+
   def close_airport(pid) do
     GenServer.call(pid, :terminate)
   end
@@ -34,19 +38,19 @@ defmodule AirElixir.ControlTower do
   ##### Gen server callbacks #####
   def init([airport, number_of_landing_strips]) do
     state = create_landing_strips(number_of_landing_strips)
-         |> List.foldl(%{airport: airport}, fn {id, ls}, acc -> Map.put(acc, id, ls) end)
+         |> List.foldl(%{airport: airport, output: &IO.puts/1}, fn {id, ls}, acc -> Map.put(acc, id, ls) end)
 
     {:ok, state}
   end
 
-  def handle_info(msg, landing_strips) do
-    IO.puts "[TOWER][#{tower_name(self())}] Unexpected message: #{inspect msg}"
+  def handle_info(msg, %{output: output} = landing_strips) do
+    output.("[TOWER][#{tower_name(self())}] Unexpected message: #{inspect msg}")
     {:noreply, landing_strips}
   end
 
-  def handle_cast({:make_landing, %{:flight_number => flight_number}, %{:id => ls_id} = ls, {plane, _} = _from}, landingstrips) do
+  def handle_cast({:make_landing, %{:flight_number => flight_number}, %{:id => ls_id} = ls, {plane, _} = _from}, %{output: output} = landingstrips) do
     :timer.sleep(300)
-    IO.puts("[TOWER][#{tower_name(self())}] Plane #{flight_number} landed, freeing up runway #{ls_id}")
+    output.("[TOWER][#{tower_name(self())}] Plane #{flight_number} landed, freeing up runway #{ls_id}")
     ls_freed = %{ls | free: true}
 
     Plane.rest(plane)
@@ -54,24 +58,29 @@ defmodule AirElixir.ControlTower do
     {:noreply, Map.put(landingstrips, ls_id, ls_freed)}
   end
 
+  def handle_call({:set_output, output}, _From, landingstrips) do
+    ls = Map.put landingstrips, :output, output
+    {:reply, ls, ls}
+  end
+
   def handle_call(:status, _From, landingstrips) do
     {:reply, landingstrips, landingstrips}
   end
 
-  def handle_call({:land_plane, %{:flight_number => flight_number} = plane, %{:id => id} = ls}, from, landingstrips) do
-    IO.puts("[TOWER][#{tower_name(self())}] Plane #{flight_number} approaching runway #{id} ~n")
+  def handle_call({:land_plane, %{:flight_number => flight_number} = plane, %{:id => id} = ls}, from, %{output: output} = landingstrips) do
+    output.("[TOWER][#{tower_name(self())}] Plane #{flight_number} approaching runway #{id} ~n")
     GenServer.cast(self(), {:make_landing, plane, ls, from})
     {:reply, :ok, landingstrips}
   end
 
-  def handle_call({:permission_to_land, plane}, _from, landingstrips) do
+  def handle_call({:permission_to_land, plane}, _from, %{output: output} = landingstrips) do
     freelsmap = Map.values(landingstrips)
                 |> Enum.filter(&(is_map(&1))) # Filter out the airport name, which is not a map
                 |> Enum.filter(fn(ls) -> ls[:free] == true end)
 
     case freelsmap do
       [] ->
-        IO.puts("[TOWER][#{tower_name(self())}] Plane #{inspect plane} asked for landing - Landing strip occupied")
+        output.("[TOWER][#{tower_name(self())}] Plane #{inspect plane} asked for landing - Landing strip occupied")
         {:reply, :cannot_land, landingstrips}
       [ls_chosen | _] ->
         landingstripoccupied = %{ls_chosen | free: false}
@@ -84,8 +93,8 @@ defmodule AirElixir.ControlTower do
     {:stop, :normal, :ok, landingstrips}
   end
 
-  def terminate(:normal, landingstrips) do
-    IO.puts("[TOWER][#{tower_name(self())}] Landing Strips #{inspect landingstrips} were freed up")
+  def terminate(:normal, %{output: output} = landingstrips) do
+    output.("[TOWER][#{tower_name(self())}] Landing Strips #{inspect landingstrips} were freed up")
     :ok
   end
 

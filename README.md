@@ -26,6 +26,7 @@ First get the dependencies and compile with
 ```bash
 $ mix deps.get
 $ mix compile
+```
 
 You can use `iex` to start a new node with
 
